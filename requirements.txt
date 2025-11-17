@@ -1,0 +1,10 @@
+pandas
+numpy
+matplotlib
+openpyxl
+customtkinter
+python-dateutil
+geoip2
+requests
+tqdm
+scapy
