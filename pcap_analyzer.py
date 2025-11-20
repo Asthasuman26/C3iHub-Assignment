@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""
-pcap_analyzer.py
-TShark -> CSV -> Pandas analyzer (Windows 11 friendly)
-Features:
- - Uses tshark (no PyShark) to export packet fields reliably for ANY pcap/pcapng/linklayer.
- - GUI (CustomTkinter) with background thread to avoid freezing.
- - OWASP detection (SQLi, XSS, Command Injection, Path Traversal, file upload)
- - Network anomaly detection (port scan, beaconing, large transfers)
- - Excel + HTML reports + charts, per-input output folders
-"""
 
 import os
 import subprocess
