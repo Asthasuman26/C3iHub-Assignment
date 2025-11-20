@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""
-firewall_analyzer.py
-Universal multi-vendor firewall log analyzer:
- - Parse FortiGate/Palo Alto/Sophos (heuristic regex + CSV fallback)
- - Normalize timestamps, GeoIP lookup (optional)
- - Simple threat-intel check (AbuseIPDB placeholder)
- - Detections: port-scan, brute-force, blocked critical ports, new IPs
- - Excel + HTML report generation
- - CustomTkinter GUI with batch processing and progress bar
-"""
 
 import os
 import re
