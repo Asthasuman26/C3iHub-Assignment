@@ -16,7 +16,7 @@ import customtkinter as ctk
 from tkinter import filedialog, messagebox
 import threading
 
-# --------- CONFIG ----------
+# CONFIG
 TSHARK_PATH = r"C:\Program Files\Wireshark\tshark.exe"  # adjust if needed
 DEFAULT_OUTPUT = "pcap_output"
 TSHARK_FIELDS = [
@@ -46,7 +46,7 @@ OWASP_PATTERNS = {
     "path_traversal": [r"\.\./", r"/etc/passwd"],
     "file_upload": [r"\.php\b", r"\.jsp\b", r"\.asp\b"]
 }
-# ---------------------------
+# 
 
 def ensure_tshark_exists():
     if os.path.exists(TSHARK_PATH):
@@ -64,10 +64,7 @@ def ensure_tshark_exists():
     return TSHARK_PATH
 
 def export_pcap_to_csv(pcap_path, csv_path):
-    """
-    Run tshark to export required fields to CSV.
-    Uses subprocess with an argument list (no shell) to avoid quoting issues on PowerShell.
-    """
+    
     tshark = ensure_tshark_exists()
     if not tshark:
         raise RuntimeError("tshark not found. Please install Wireshark/TShark and set TSHARK_PATH.")
@@ -81,8 +78,6 @@ def export_pcap_to_csv(pcap_path, csv_path):
 
     # Run and write directly to csv_path
     with open(csv_path, "wb") as out_f:
-        # Run tshark and redirect stdout to file (binary)
-        # We capture stdout (it is text) and write bytes - this is simpler for Windows quoting issues
         proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = proc.communicate()
         if proc.returncode not in (0, 1):  # tshark returns 1 for "some lines unparsable" sometimes
@@ -95,7 +90,7 @@ def load_csv_to_df(csv_path):
     """
     # read with pandas (it will use double-quote quoting)
     df = pd.read_csv(csv_path, dtype=str, keep_default_na=False)
-    # Rename columns to friendly names
+   
     rename_map = {
         "frame.time_epoch": "ts_epoch",
         "frame.number": "frame_no",
@@ -134,7 +129,7 @@ def load_csv_to_df(csv_path):
         df["frame_len"] = 0
     return df
 
-# -------------------- Detection functions --------------------
+# Detection functions
 def detect_port_scans(df, unique_ports_threshold=30):
     alerts = []
     # count unique destination ports per source IP
@@ -167,7 +162,6 @@ def detect_large_transfers(df, threshold_bytes=1_000_000):
 
 def scan_owasp(df):
     alerts = []
-    # check fields likely to contain user input and payloads
     payload_cols = ["http_uri", "http_file_data", "data_text", "dns_query"]
     for idx, row in df.iterrows():
         combined = " ".join([str(row.get(c, "")).lower() for c in payload_cols if c in row])
@@ -179,7 +173,7 @@ def scan_owasp(df):
                     break
     return alerts
 
-# -------------------- Reporting --------------------
+# Reporting
 def generate_reports(df, alerts, outdir, base_name):
     os.makedirs(outdir, exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -229,14 +223,14 @@ def generate_reports(df, alerts, outdir, base_name):
         fh.write("\n".join(html_parts))
     return excel_path, html_path
 
-# -------------------- Analyzer (high-level) --------------------
+# Analyzer (high-level)
 def analyze_pcap_file(pcap_path, output_dir):
     base = os.path.splitext(os.path.basename(pcap_path))[0]
     out_sub = os.path.join(output_dir, base)
     os.makedirs(out_sub, exist_ok=True)
 
     csv_path = os.path.join(out_sub, f"{base}_tshark_export.csv")
-    # export only if not exists or pcap newer
+    
     pcap_mtime = os.path.getmtime(pcap_path)
     if not os.path.exists(csv_path) or os.path.getmtime(csv_path) < pcap_mtime:
         export_pcap_to_csv(pcap_path, csv_path)
@@ -257,7 +251,7 @@ def analyze_pcap_file(pcap_path, output_dir):
     excel, html = generate_reports(df, alerts, out_sub, base)
     return {"excel": excel, "html": html, "alerts": alerts, "rows": len(df)}
 
-# -------------------- GUI --------------------
+# GUI
 class PcapAnalyzerGUI(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -312,7 +306,7 @@ class PcapAnalyzerGUI(ctk.CTk):
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
-# -------------------- CLI --------------------
+# CLI 
 def cli_main():
     import argparse
     p = argparse.ArgumentParser()
